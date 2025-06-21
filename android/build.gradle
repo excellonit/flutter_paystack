@@ -7,7 +7,6 @@ buildscript {
         mavenCentral()
         google()
     }
-
     dependencies {
         classpath 'com.android.tools.build:gradle:7.4.0-rc02'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -25,9 +24,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'co.paystack.flutter'
+    namespace 'co.paystack.flutterpaystack'  // ← Fixed this line
     compileSdkVersion 32
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
