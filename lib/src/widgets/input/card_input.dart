@@ -12,19 +12,15 @@ class CardInput extends StatefulWidget {
   final PaymentCard? card;
   final ValueChanged<PaymentCard?> onValidated;
 
-  CardInput({
-    Key? key,
-    required this.buttonText,
-    required this.card,
-    required this.onValidated,
-  }) : super(key: key);
+  CardInput({Key? key, required this.buttonText, required this.card, required this.onValidated})
+    : super(key: key);
 
   @override
   _CardInputState createState() => _CardInputState(card);
 }
 
 class _CardInputState extends State<CardInput> {
-  var _formKey = new GlobalKey<FormState>();
+  var _formKey = GlobalKey<FormState>();
   final PaymentCard? _card;
   var _autoValidate = AutovalidateMode.disabled;
   late TextEditingController numberController;
@@ -35,10 +31,13 @@ class _CardInputState extends State<CardInput> {
   @override
   void initState() {
     super.initState();
-    numberController = new TextEditingController();
+    numberController = TextEditingController();
     numberController.addListener(_getCardTypeFrmNumber);
-    if (_card?.number != null) {
-      numberController.text = Utils.addSpaces(_card!.number!);
+
+    // Safe null check for card number
+    final cardNumber = _card?.number;
+    if (cardNumber != null) {
+      numberController.text = Utils.addSpaces(cardNumber);
     }
   }
 
@@ -51,73 +50,85 @@ class _CardInputState extends State<CardInput> {
 
   @override
   Widget build(BuildContext context) {
-    return new Form(
+    return Form(
       autovalidateMode: _autoValidate,
       key: _formKey,
-      child: new Column(
+      child: Column(
         children: <Widget>[
-          new NumberField(
+          NumberField(
             key: Key("CardNumberKey"),
             controller: numberController,
             card: _card,
-            onSaved: (String? value) =>
-                _card!.number = CardUtils.getCleanedNumber(value),
+            onSaved: (String? value) {
+              final card = _card;
+              if (card != null) {
+                card.number = CardUtils.getCleanedNumber(value);
+              }
+            },
             suffix: getCardIcon(),
           ),
-          new SizedBox(
-            height: 15.0,
-          ),
-          new Row(
+          SizedBox(height: 15.0),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              new Flexible(
-                child: new DateField(
+              Flexible(
+                child: DateField(
                   key: ValueKey("ExpiryKey"),
                   card: _card,
                   onSaved: (value) {
-                    List<int> expiryDate = CardUtils.getExpiryDate(value);
-                    _card!.expiryMonth = expiryDate[0];
-                    _card!.expiryYear = expiryDate[1];
+                    final card = _card;
+                    if (card != null) {
+                      List<int> expiryDate = CardUtils.getExpiryDate(value);
+                      card.expiryMonth = expiryDate[0];
+                      card.expiryYear = expiryDate[1];
+                    }
                   },
                 ),
               ),
-              new SizedBox(width: 15.0),
-              new Flexible(
-                  child: new CVCField(
-                key: Key("CVVKey"),
-                card: _card,
-                onSaved: (value) {
-                  _card!.cvc = CardUtils.getCleanedNumber(value);
-                },
-              )),
+              SizedBox(width: 15.0),
+              Flexible(
+                child: CVCField(
+                  key: Key("CVVKey"),
+                  card: _card,
+                  onSaved: (value) {
+                    final card = _card;
+                    if (card != null) {
+                      card.cvc = CardUtils.getCleanedNumber(value);
+                    }
+                  },
+                ),
+              ),
             ],
           ),
-          new SizedBox(
-            height: 20.0,
+          SizedBox(height: 20.0),
+          AccentButton(
+            key: Key("PayButton"),
+            onPressed: _validateInputs,
+            text: widget.buttonText,
+            showProgress: _validated,
           ),
-          new AccentButton(
-              key: Key("PayButton"),
-              onPressed: _validateInputs,
-              text: widget.buttonText,
-              showProgress: _validated),
         ],
       ),
     );
   }
 
   void _getCardTypeFrmNumber() {
-    String input = CardUtils.getCleanedNumber(numberController.text);
-    String cardType = _card!.getTypeForIIN(input);
-    setState(() {
-      this._card!.type = cardType;
-    });
+    final card = _card;
+    if (card != null) {
+      String input = CardUtils.getCleanedNumber(numberController.text);
+      String cardType = card.getTypeForIIN(input);
+      setState(() {
+        card.type = cardType;
+      });
+    }
   }
 
   void _validateInputs() {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    final FormState form = _formKey.currentState!;
-    if (form.validate()) {
+    FocusScope.of(context).requestFocus(FocusNode());
+    final FormState? form = _formKey.currentState;
+
+    if (form != null && form.validate()) {
       form.save();
       widget.onValidated(_card);
       if (mounted) {
@@ -136,8 +147,10 @@ class _CardInputState extends State<CardInput> {
       size: 15.0,
       color: Colors.grey[600],
     );
-    if (_card != null) {
-      switch (_card!.type) {
+
+    final card = _card;
+    if (card != null) {
+      switch (card.type) {
         case CardType.masterCard:
           img = 'mastercard.png';
           break;
@@ -161,6 +174,7 @@ class _CardInputState extends State<CardInput> {
           break;
       }
     }
+
     Widget widget;
     if (img.isNotEmpty) {
       widget = Image.asset(
