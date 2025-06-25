@@ -4,21 +4,6 @@ import 'package:flutter_paystack/src/common/utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const MethodChannel channel =
-      MethodChannel('plugins.wilburt/flutter_paystack');
-
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUp(() {
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      return '';
-    });
-  });
-
-  tearDown(() {
-    channel.setMockMethodCallHandler(null);
-  });
-
   group("$Utils", () {
     group("#getKeyErrorMsg", () {
       test("returns a string with keyType", () {
