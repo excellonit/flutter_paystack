@@ -13,9 +13,8 @@ abstract class BaseState<T extends StatefulWidget> extends State<T> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
-
         final shouldPop = await _onWillPop();
         if (shouldPop && context.mounted) {
           Navigator.of(context).pop(getPopReturnValue());
@@ -80,7 +79,6 @@ abstract class BaseState<T extends StatefulWidget> extends State<T> {
     bool exit =
         await showDialog<bool>(context: context, builder: (BuildContext context) => dialog) ??
         false;
-
     return exit;
   }
 
