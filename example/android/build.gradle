@@ -28,16 +28,16 @@ subprojects {
 subprojects {
     afterEvaluate { project ->
         if (project.plugins.hasPlugin("kotlin-android")) {
-            project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions {
-                    jvmTarget = "21"
-                }
+            // Kotlin uses JVM 21 features via toolchain
+            project.kotlin {
+                jvmToolchain(21)
             }
 
+            // Java targets 17 for Android compatibility
             project.android {
                 compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_21
-                    targetCompatibility JavaVersion.VERSION_21
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
                 }
             }
         }
